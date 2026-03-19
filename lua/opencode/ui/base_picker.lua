@@ -97,6 +97,29 @@ local function telescope_ui(opts)
 
   local current_picker
 
+  local function create_favorite_boosted_sorter()
+    local base_sorter = conf.generic_sorter({})
+    local original_scoring = base_sorter.scoring_function
+
+    base_sorter.scoring_function = function(self, prompt, line, entry, cb)
+      local base_score = original_scoring(self, prompt, line, entry, cb)
+      if base_score <= 0 then
+        return base_score
+      end
+
+      if entry and entry.value and type(entry.value) == 'table' then
+        local fav = entry.value.favorite_index
+        if fav and fav < 999 then
+          base_score = math.max(1, base_score - 1000 + fav)
+        end
+      end
+
+      return base_score
+    end
+
+    return base_sorter
+  end
+
   ---Creates entry maker function for telescope
   ---@param item any
   ---@return TelescopeEntry
@@ -141,7 +164,7 @@ local function telescope_ui(opts)
   current_picker = pickers.new({}, {
     prompt_title = opts.title,
     finder = finders.new_table({ results = opts.items, entry_maker = make_entry }),
-    sorter = conf.generic_sorter({}),
+    sorter = create_favorite_boosted_sorter(),
     previewer = opts.preview == 'file' and require('telescope.previewers').vim_buffer_vimgrep.new({}) or nil,
     layout_config = opts.width and {
         width = opts.width + 7, -- extra space for telescope UI
