@@ -279,7 +279,7 @@ describe('opencode.ui.base_picker telescope', function()
     local fav_score = captured_sorter:scoring_function('test', 'favorite model', fav_entry)
     local normal_score = captured_sorter:scoring_function('test', 'other model', normal_entry)
 
-    assert.is_true(fav_score < normal_score)
+    assert.is_true(fav_score > normal_score)
     assert.is_true(fav_score > 0)
   end)
 

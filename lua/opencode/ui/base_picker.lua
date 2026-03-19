@@ -110,7 +110,7 @@ local function telescope_ui(opts)
       if entry and entry.value and type(entry.value) == 'table' then
         local fav = entry.value.favorite_index
         if fav and fav < 999 then
-          base_score = math.max(1, base_score - 1000 + fav)
+          base_score = base_score + 1000 - fav
         end
       end
 
