@@ -212,6 +212,8 @@ M.defaults = {
     },
     picker = {
       snacks_layout = nil,
+      ---@type string[]
+      include_paths = {},
     },
     completion = {
       file_sources = {

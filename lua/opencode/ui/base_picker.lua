@@ -314,7 +314,16 @@ local function telescope_ui(opts)
                     opts.close()
                   else
                     opts.items = resolved_items
-                    refresh_picker()
+                    vim.schedule(function()
+                      refresh_picker()
+                      -- Refocus the Telescope prompt after refreshing (e.g. after vim.ui.input steals focus)
+                      if current_picker and current_picker.prompt_bufnr and vim.api.nvim_buf_is_valid(current_picker.prompt_bufnr) then
+                        local prompt_win = vim.fn.bufwinid(current_picker.prompt_bufnr)
+                        if prompt_win ~= -1 then
+                          vim.api.nvim_set_current_win(prompt_win)
+                        end
+                      end
+                    end)
                   end
                 end
               end)
