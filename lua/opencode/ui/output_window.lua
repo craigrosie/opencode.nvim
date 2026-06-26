@@ -218,12 +218,15 @@ function M.setup(windows)
   window_options.set_buffer_option('swapfile', false, windows.output_buf)
   window_options.set_buffer_option('undofile', false, windows.output_buf)
   window_options.set_buffer_option('undolevels', -1, windows.output_buf)
+  local use_folds = config.ui.output.tools.use_folds
   window_options.set_window_option('foldmethod', 'manual', windows.output_win)
-  window_options.set_window_option('foldenable', true, windows.output_win)
+  window_options.set_window_option('foldenable', use_folds, windows.output_win)
   window_options.set_window_option('foldlevel', 0, windows.output_win)
-  window_options.set_window_option('foldcolumn', '1', windows.output_win)
-  window_options.set_window_option('fillchars', 'fold:-,foldopen:-,foldclose:+,foldsep:│', windows.output_win)
-  window_options.set_window_option('foldtext', 'v:lua.opencode_fold_text()', windows.output_win)
+  window_options.set_window_option('foldcolumn', use_folds and '1' or '0', windows.output_win)
+  if use_folds then
+    window_options.set_window_option('fillchars', 'fold:-,foldopen:-,foldclose:+,foldsep:│', windows.output_win)
+    window_options.set_window_option('foldtext', 'v:lua.opencode_fold_text()', windows.output_win)
+  end
 
   if config.ui.position ~= 'current' then
     window_options.set_window_option('winfixbuf', true, windows.output_win, { save_original = true })
@@ -356,6 +359,10 @@ function M.set_folds(fold_ranges)
 
   vim.api.nvim_win_call(win, function()
     local view = vim.fn.winsaveview()
+
+    -- Clear all existing manual folds before recreating them to prevent
+    -- stale folds from persisting when fold ranges change.
+    pcall(vim.cmd, 'silent! normal! zE')
 
     local line_count = vim.api.nvim_buf_line_count(buf)
     for _, range in ipairs(folds.ranges) do
